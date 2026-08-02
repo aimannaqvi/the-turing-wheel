@@ -362,14 +362,22 @@ export function GameShell() {
           {pack.artifacts.length === 0 ? (
             <div>No pack for today yet — check back soon</div>
           ) : null}
-          {process.env.NODE_ENV !== "production" ? (
+          <div className="mt-2 flex flex-col items-end gap-1">
             <Link
-              href="/admin"
-              className="mt-2 inline-block underline underline-offset-2 opacity-70 hover:opacity-100"
+              href="/about"
+              className="underline underline-offset-2 opacity-70 hover:opacity-100"
             >
-              Admin
+              About
             </Link>
-          ) : null}
+            {process.env.NODE_ENV !== "production" ? (
+              <Link
+                href="/admin"
+                className="underline underline-offset-2 opacity-70 hover:opacity-100"
+              >
+                Admin
+              </Link>
+            ) : null}
+          </div>
         </div>
       </header>
 
