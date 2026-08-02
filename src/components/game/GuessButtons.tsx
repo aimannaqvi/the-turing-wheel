@@ -19,17 +19,17 @@ export function GuessButtons({ onGuess, disabled }: Props) {
         type="button"
         disabled={disabled}
         onClick={() => onGuess(false)}
-        className="flex-1 border border-[var(--ink)] bg-transparent px-4 py-5 font-serif text-2xl tracking-wide transition hover:bg-[var(--accent)] disabled:opacity-40"
+        className="flex-1 border border-[var(--ink)] bg-transparent px-4 py-5 font-serif text-2xl lowercase tracking-wide transition hover:bg-[var(--accent)] hover:text-[var(--on-accent)] disabled:opacity-40"
       >
-        Real
+        real
       </button>
       <button
         type="button"
         disabled={disabled}
         onClick={() => onGuess(true)}
-        className="flex-1 border border-[var(--ink)] bg-[var(--ink)] px-4 py-5 font-serif text-2xl tracking-wide text-[var(--paper)] transition hover:border-[var(--accent)] hover:bg-[var(--accent)] hover:text-[var(--ink)] disabled:opacity-40"
+        className="flex-1 border border-[var(--ink)] bg-[var(--ink)] px-4 py-5 font-serif text-2xl lowercase tracking-wide text-[var(--paper)] transition hover:border-[var(--accent)] hover:bg-[var(--accent)] hover:text-[var(--on-accent)] disabled:opacity-40"
       >
-        AI
+        ai
       </button>
     </motion.div>
   );

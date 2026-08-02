@@ -7,7 +7,7 @@ export function formatSourceLabel(
   const raw = proofOrProvenance.trim();
 
   const labeled = (name: string) =>
-    isAi ? `Generated via ${name}` : `Source: ${name}`;
+    (isAi ? `generated via ${name}` : `source: ${name}`).toLowerCase();
 
   try {
     if (/^https?:\/\//i.test(raw)) {

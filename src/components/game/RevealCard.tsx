@@ -31,16 +31,18 @@ export function RevealCard({ reveal, isCorrect, onContinue, isLast }: Props) {
           color: isCorrect ? "var(--sage)" : "var(--rose)",
         }}
       >
-        {isCorrect ? "Correct" : "Not quite"}
-        <span className="text-[var(--ink)]">
+        <span className="lowercase">
+          {isCorrect ? "correct" : "not quite"}
+        </span>
+        <span className="lowercase text-[var(--ink)]">
           {" "}
-          — it was {reveal.isAi ? "AI" : "Real"}
+          — it was {reveal.isAi ? "ai" : "real"}
         </span>
       </p>
 
       <div className="mt-8">
-        <p className="font-sans text-[11px] uppercase tracking-[0.22em] text-[var(--muted)]">
-          How do we know?
+        <p className="font-sans text-[11px] lowercase tracking-[0.14em] text-[var(--muted)]">
+          how do we know?
         </p>
         <ul className="mt-3 space-y-2">
           {bullets.map((b, i) => (
@@ -58,9 +60,9 @@ export function RevealCard({ reveal, isCorrect, onContinue, isLast }: Props) {
       <button
         type="button"
         onClick={onContinue}
-        className="mt-10 bg-[var(--accent)] px-6 py-3 font-serif text-lg tracking-wide text-[var(--ink)] transition hover:brightness-95"
+        className="mt-10 bg-[var(--accent)] px-6 py-3 font-serif text-lg lowercase tracking-wide text-[var(--on-accent)] transition hover:brightness-95"
       >
-        {isLast ? "Done for today" : "Next spin"}
+        {isLast ? "done for today" : "next spin"}
       </button>
     </motion.div>
   );

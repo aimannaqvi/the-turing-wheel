@@ -64,7 +64,7 @@ export function ArtifactView({ artifact, sourceLabel }: Props) {
       ) : null}
 
       {artifact.mediaType === "audio" && artifact.mediaUrl ? (
-        <div className="border border-[var(--ink)]/10 bg-white/60 px-6 py-10">
+        <div className="border border-[var(--ink)]/10 bg-[var(--ink)]/5 px-6 py-10">
           <div className="mb-6 flex h-16 items-end justify-center gap-1">
             {Array.from({ length: 32 }).map((_, i) => (
               <div

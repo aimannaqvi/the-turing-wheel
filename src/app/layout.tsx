@@ -1,17 +1,21 @@
 import type { Metadata } from "next";
-import { DM_Sans, Playfair_Display } from "next/font/google";
+import { Libre_Franklin, Newsreader } from "next/font/google";
+import Script from "next/script";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import "./globals.css";
 
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
+/** Editorial sans — Franklin Gothic cousin, less “AI starter kit” than DM Sans */
+const libreFranklin = Libre_Franklin({
+  variable: "--font-sans-face",
   subsets: ["latin"],
   weight: ["400", "500", "600"],
 });
 
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
+/** Newsy serif — denser, less bridal than Playfair */
+const newsreader = Newsreader({
+  variable: "--font-serif-face",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -28,6 +32,8 @@ export const metadata: Metadata = {
   },
 };
 
+const themeBootScript = `(function(){try{var t=localStorage.getItem('ttw-theme');if(t==='dusk')document.documentElement.dataset.theme='dusk';}catch(e){}})();`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -36,9 +42,16 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${dmSans.variable} ${playfair.variable} h-full antialiased`}
+      className={`${libreFranklin.variable} ${newsreader.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        <Script id="theme-boot" strategy="beforeInteractive">
+          {themeBootScript}
+        </Script>
+        <ThemeToggle />
+        {children}
+      </body>
     </html>
   );
 }

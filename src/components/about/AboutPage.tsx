@@ -52,6 +52,7 @@ export function AboutPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4 }}
+        className="pr-12"
       >
         <Link
           href="/"
@@ -68,9 +69,9 @@ export function AboutPage() {
             variants={fade}
             initial="hidden"
             animate="show"
-            className="inline-block bg-[var(--accent)] px-2 py-0.5 font-sans text-[11px] uppercase tracking-[0.28em] text-[var(--ink)]"
+            className="inline-block bg-[var(--accent)] px-2 py-0.5 font-sans text-[11px] lowercase tracking-[0.14em] text-[var(--on-accent)]"
           >
-            The Turing Wheel
+            the turing wheel
           </motion.p>
           <motion.h1
             custom={1}

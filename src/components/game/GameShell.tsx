@@ -289,9 +289,11 @@ export function GameShell() {
   if (error) {
     return (
       <div className="mx-auto max-w-lg px-6 py-24">
-        <BackButton onClick={() => router.push("/")} label="Home" />
-        <p className="mt-8 text-center font-serif text-2xl">Something snagged</p>
-        <p className="mt-3 text-center font-sans text-sm text-[var(--muted)]">
+        <BackButton onClick={() => router.push("/")} label="home" />
+        <p className="mt-8 text-center font-serif text-2xl lowercase">
+          something snagged
+        </p>
+        <p className="mt-3 text-center font-sans text-sm lowercase text-[var(--muted)]">
           {error}
         </p>
         <div className="mt-8 flex justify-center gap-4">
@@ -301,9 +303,9 @@ export function GameShell() {
               setError(null);
               window.location.reload();
             }}
-            className="bg-[var(--accent)] px-5 py-2.5 font-serif text-lg text-[var(--ink)]"
+            className="bg-[var(--accent)] px-5 py-2.5 font-serif text-lg lowercase text-[var(--on-accent)]"
           >
-            Retry
+            retry
           </button>
         </div>
       </div>
@@ -313,7 +315,7 @@ export function GameShell() {
   if (!pack || !progress) {
     return (
       <div className="mx-auto max-w-lg px-6 py-24 text-center font-sans text-sm text-[var(--muted)]">
-        Loading today’s wheel…
+        loading today’s wheel…
       </div>
     );
   }
@@ -331,10 +333,10 @@ export function GameShell() {
     phase === "complete";
   const backLabel =
     phase === "complete"
-      ? "Home"
+      ? "home"
       : phase === "revealed"
-        ? "Back to wheel"
-        : "Back";
+        ? "back to wheel"
+        : "back";
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-6 pb-16 pt-10 sm:px-10">
@@ -343,38 +345,38 @@ export function GameShell() {
           <BackButton onClick={onBack} label={backLabel} />
         </div>
       ) : null}
-      <header className="mb-6 flex items-end justify-between gap-4">
+      <header className="mb-6 flex items-end justify-between gap-4 pr-12">
         <div>
           <Link
             href="/"
-            className="inline-block bg-[var(--accent)] px-2 py-0.5 font-sans text-[11px] uppercase tracking-[0.28em] text-[var(--ink)] transition hover:brightness-95"
+            className="inline-block bg-[var(--accent)] px-2 py-0.5 font-sans text-[11px] lowercase tracking-[0.14em] text-[var(--on-accent)] transition hover:brightness-95"
           >
-            The Turing Wheel
+            the turing wheel
           </Link>
-          <h1 className="mt-3 font-serif text-3xl tracking-tight sm:text-4xl">
+          <h1 className="mt-3 font-serif text-3xl lowercase tracking-tight sm:text-4xl">
             {formatPlayDateLabel(pack.playDate)}
           </h1>
         </div>
-        <div className="text-right font-sans text-xs leading-5 text-[var(--muted)]">
+        <div className="text-right font-sans text-xs lowercase leading-5 text-[var(--muted)]">
           {pack.source === "fixtures" ? (
             <div className="opacity-60">local fixtures</div>
           ) : null}
           {pack.artifacts.length === 0 ? (
-            <div>No pack for today yet — check back soon</div>
+            <div>no pack for today yet — check back soon</div>
           ) : null}
           <div className="mt-2 flex flex-col items-end gap-1">
             <Link
               href="/about"
               className="underline underline-offset-2 opacity-70 hover:opacity-100"
             >
-              About
+              about
             </Link>
             {process.env.NODE_ENV !== "production" ? (
               <Link
                 href="/admin"
                 className="underline underline-offset-2 opacity-70 hover:opacity-100"
               >
-                Admin
+                admin
               </Link>
             ) : null}
           </div>
@@ -398,11 +400,11 @@ export function GameShell() {
             exit={{ opacity: 0 }}
             className="flex flex-1 flex-col items-start justify-center py-16"
           >
-            <p className="font-serif text-4xl tracking-tight sm:text-5xl">
-              Day complete
+            <p className="font-serif text-4xl lowercase tracking-tight sm:text-5xl">
+              day complete
             </p>
-            <p className="mt-4 max-w-md font-sans text-base leading-7 text-[var(--ink)]/80">
-              Come back after midnight CT for a new pack.
+            <p className="mt-4 max-w-md font-sans text-base lowercase leading-7 text-[var(--ink)]/80">
+              come back after midnight ct for a new pack.
             </p>
           </motion.section>
         ) : (
@@ -433,11 +435,11 @@ export function GameShell() {
 
             {(phase === "idle" || phase === "spinning") && !nextArtifact ? (
               <div className="py-20 text-center">
-                <p className="font-serif text-2xl">
+                <p className="font-serif text-2xl lowercase">
                   {CATEGORY_META[category].label} clear
                 </p>
-                <p className="mt-3 font-sans text-sm text-[var(--muted)]">
-                  Switch tabs for more, or come back tomorrow.
+                <p className="mt-3 font-sans text-sm lowercase text-[var(--muted)]">
+                  switch tabs for more, or come back tomorrow.
                 </p>
                 <div className="mt-6 flex justify-center">
                   <BackButton
@@ -453,8 +455,8 @@ export function GameShell() {
                       PLAYABLE_CATEGORIES.some(
                         (c) => c !== category && remainingByCategory[c] > 0,
                       )
-                        ? "Back to another category"
-                        : "Home"
+                        ? "back to another category"
+                        : "home"
                     }
                   />
                 </div>
@@ -464,7 +466,7 @@ export function GameShell() {
             {(phase === "artifact" || phase === "revealed") && current ? (
               <div className="py-2">
                 <div className="mb-4">
-                  <BackButton onClick={onBack} label="Back to wheel" />
+                  <BackButton onClick={onBack} label="back to wheel" />
                 </div>
                 <ArtifactView
                   artifact={current}

@@ -209,7 +209,7 @@ function AudioCard({ item }: { item: ReelPreview }) {
       <div className="pointer-events-none absolute -bottom-10 -left-8 h-32 w-32 rounded-full border border-white/5" />
 
       <AudioGlyph kind={kind} seed={seed} />
-      <p className="relative z-[1] text-center font-sans text-[11px] uppercase tracking-[0.18em] text-white/75">
+      <p className="relative z-[1] text-center font-sans text-[11px] lowercase tracking-[0.14em] text-white/75">
         {label}
       </p>
     </div>
@@ -580,9 +580,9 @@ export function SpinReel({
         type="button"
         onClick={onSpinRequest}
         disabled={disabled || spinning || landing}
-        className="bg-[var(--accent)] px-8 py-3 font-serif text-xl tracking-wide text-[var(--ink)] transition enabled:hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-35"
+        className="bg-[var(--accent)] px-8 py-3 font-serif text-xl lowercase tracking-wide text-[var(--on-accent)] transition enabled:hover:brightness-95 disabled:cursor-not-allowed disabled:opacity-35"
       >
-        {spinning || landing ? "…" : "Spin"}
+        {spinning || landing ? "…" : "spin"}
       </button>
     </div>
   );

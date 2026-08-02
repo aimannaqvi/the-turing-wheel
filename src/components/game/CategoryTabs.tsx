@@ -23,7 +23,7 @@ export function CategoryTabs({ active, onChange, locked }: Props) {
             type="button"
             disabled={locked}
             onClick={() => onChange(cat)}
-            className={`relative -mb-px px-4 py-3 font-serif text-lg tracking-wide transition sm:px-5 sm:text-xl ${
+            className={`relative -mb-px px-4 py-3 font-serif text-lg lowercase tracking-wide transition sm:px-5 sm:text-xl ${
               isActive
                 ? "text-[var(--ink)]"
                 : "text-[var(--muted)] hover:text-[var(--ink)]"

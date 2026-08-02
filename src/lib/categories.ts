@@ -9,7 +9,7 @@ export function isPlayableCategory(t: MediaType): t is PlayableCategory {
 }
 
 export const CATEGORY_META: Record<PlayableCategory, { label: string }> = {
-  image: { label: "Image" },
-  video: { label: "Video" },
-  audio: { label: "Audio" },
+  image: { label: "image" },
+  video: { label: "video" },
+  audio: { label: "audio" },
 };

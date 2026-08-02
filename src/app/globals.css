@@ -6,36 +6,55 @@
   --muted: #6e6a63;
   --accent: #f5e27a;
   --accent-soft: #fff6c8;
+  --on-accent: #121212;
   --sage: #7f9b84;
   --rose: #c48b8b;
   --background: var(--paper);
   --foreground: var(--ink);
+  --glow-accent: rgba(245, 226, 122, 0.18);
+  --selection: rgba(245, 226, 122, 0.55);
+}
+
+html[data-theme="dusk"] {
+  --paper: #1f1c17;
+  --ink: #f3efe6;
+  --muted: #a39e94;
+  --accent: #e6d27a;
+  --accent-soft: #3a3424;
+  --on-accent: #1a1712;
+  --sage: #8fad96;
+  --rose: #d0a0a0;
+  --background: var(--paper);
+  --foreground: var(--ink);
+  --glow-accent: rgba(230, 210, 122, 0.1);
+  --selection: rgba(230, 210, 122, 0.35);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-dm-sans);
-  --font-serif: var(--font-playfair);
+  --font-sans: var(--font-sans-face);
+  --font-serif: var(--font-serif-face);
 }
 
 body {
   background:
     radial-gradient(900px 480px at 85% -5%, var(--accent-soft), transparent 60%),
-    radial-gradient(700px 400px at 0% 100%, rgba(245, 226, 122, 0.18), transparent),
+    radial-gradient(700px 400px at 0% 100%, var(--glow-accent), transparent),
     var(--paper);
   color: var(--ink);
-  font-family: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-sans-face), ui-sans-serif, system-ui, sans-serif;
 }
 
 .font-serif {
-  font-family: var(--font-playfair), ui-serif, Georgia, serif;
+  font-family: var(--font-serif-face), ui-serif, Georgia, "Times New Roman", serif;
+  font-feature-settings: "liga" 1, "kern" 1;
 }
 
 .font-sans {
-  font-family: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-sans-face), ui-sans-serif, system-ui, sans-serif;
 }
 
 ::selection {
-  background: rgba(245, 226, 122, 0.55);
+  background: var(--selection);
 }

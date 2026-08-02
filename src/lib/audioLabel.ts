@@ -1,15 +1,15 @@
 /** Short scene labels — never voice names / dataset IDs. */
 export const SCENE_POOL = [
-  "Customer support",
-  "Rant to friend",
-  "Telling a story",
-  "Voicemail",
-  "Casual check-in",
-  "Podcast clip",
-  "Leaving a message",
-  "Catching up",
-  "Phone call",
-  "Reading aloud",
+  "customer support",
+  "rant to friend",
+  "telling a story",
+  "voicemail",
+  "casual check-in",
+  "podcast clip",
+  "leaving a message",
+  "catching up",
+  "phone call",
+  "reading aloud",
 ] as const;
 
 export function pickGenericScene(seed: string): string {
@@ -47,19 +47,19 @@ export function genericAudioLabel(
     return SCENE_POOL[hash(id || head) % SCENE_POOL.length]!;
   }
 
-  if (/customer|support/.test(lower)) return "Customer support";
-  if (/rant/.test(lower)) return "Rant to friend";
-  if (/voicemail/.test(lower)) return "Voicemail";
-  if (/podcast/.test(lower)) return "Podcast clip";
-  if (/casual|check-?in/.test(lower)) return "Casual check-in";
-  if (/story|telling/.test(lower)) return "Telling a story";
-  if (/leaving a message|leave a message/.test(lower)) return "Leaving a message";
-  if (/catching up/.test(lower)) return "Catching up";
-  if (/phone call/.test(lower)) return "Phone call";
-  if (/reading aloud/.test(lower)) return "Reading aloud";
+  if (/customer|support/.test(lower)) return "customer support";
+  if (/rant/.test(lower)) return "rant to friend";
+  if (/voicemail/.test(lower)) return "voicemail";
+  if (/podcast/.test(lower)) return "podcast clip";
+  if (/casual|check-?in/.test(lower)) return "casual check-in";
+  if (/story|telling/.test(lower)) return "telling a story";
+  if (/leaving a message|leave a message/.test(lower)) return "leaving a message";
+  if (/catching up/.test(lower)) return "catching up";
+  if (/phone call/.test(lower)) return "phone call";
+  if (/reading aloud/.test(lower)) return "reading aloud";
 
   // Already a short clean scene label
-  if (head.length > 0 && head.length <= 28) return head;
+  if (head.length > 0 && head.length <= 28) return head.toLowerCase();
 
   return SCENE_POOL[hash(id || head || "audio") % SCENE_POOL.length]!;
 }

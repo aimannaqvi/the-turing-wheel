@@ -17,7 +17,9 @@ export function formatPlayDateLabel(playDate: string): string {
     weekday: "long",
     month: "long",
     day: "numeric",
-  }).format(utc);
+  })
+    .format(utc)
+    .toLowerCase();
 }
 
 /** ms until next Midnight CT */
