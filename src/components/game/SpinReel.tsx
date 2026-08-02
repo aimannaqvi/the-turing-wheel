@@ -520,11 +520,12 @@ export function SpinReel({
           className="relative w-full overflow-hidden border-2 border-[var(--ink)] bg-[#0c0c0c]"
           style={{ height: WINDOW_H }}
         >
+          {/* Same geometry as a centered card (centerY + left-3/right-3) */}
           <div
-            className="pointer-events-none absolute inset-x-0 z-30 border-y-2 border-[var(--accent)]"
+            className="pointer-events-none absolute left-3 right-3 z-30 border-y-2 border-[var(--accent)]"
             style={{
-              top: WINDOW_H / 2 - CARD_H / 2 + 8,
-              height: CARD_H - 16,
+              top: WINDOW_H / 2 - CARD_H / 2,
+              height: CARD_H,
               boxShadow: landing
                 ? "0 0 48px rgba(245,226,122,0.28)"
                 : "0 0 40px rgba(245,226,122,0.12)",
