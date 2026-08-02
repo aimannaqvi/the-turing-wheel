@@ -18,6 +18,14 @@ export const metadata: Metadata = {
   title: "The Turing Wheel",
   description:
     "A daily puzzle: can you tell Real from AI? Minimalist media literacy for the feed era.",
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon.png", type: "image/png", sizes: "192x192" },
+      { url: "/favicon.ico", sizes: "48x48" },
+    ],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+  },
 };
 
 export default function RootLayout({
