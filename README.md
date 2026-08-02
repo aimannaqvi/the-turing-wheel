@@ -2,6 +2,8 @@
 
 Daily Real-vs-AI media puzzle. Next.js + Supabase. Desktop-first, NYT-games energy.
 
+**Live:** [https://the-turing-wheel.vercel.app](https://the-turing-wheel.vercel.app)
+
 ## Stack
 
 - Next.js (App Router) + Tailwind + Framer Motion
