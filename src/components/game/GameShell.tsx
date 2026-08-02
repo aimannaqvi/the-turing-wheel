@@ -360,14 +360,16 @@ export function GameShell() {
             <div className="opacity-60">local fixtures</div>
           ) : null}
           {pack.artifacts.length === 0 ? (
-            <div>No pack yet — build one in Admin</div>
+            <div>No pack for today yet — check back soon</div>
           ) : null}
-          <Link
-            href="/admin"
-            className="mt-2 inline-block underline underline-offset-2 opacity-70 hover:opacity-100"
-          >
-            Admin
-          </Link>
+          {process.env.NODE_ENV !== "production" ? (
+            <Link
+              href="/admin"
+              className="mt-2 inline-block underline underline-offset-2 opacity-70 hover:opacity-100"
+            >
+              Admin
+            </Link>
+          ) : null}
         </div>
       </header>
 
