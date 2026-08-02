@@ -262,21 +262,67 @@ async function buildUserParts(input: AnalysisInput): Promise<ContentPart[]> {
   return parts;
 }
 
+/** Ollama native /api/chat — honors num_ctx; images as raw base64. */
+async function ollamaChat(
+  endpoint: AnalysisEndpoint,
+  userParts: ContentPart[],
+): Promise<string> {
+  const root = endpoint.baseUrl.replace(/\/v1\/?$/, "");
+  const images: string[] = [];
+  const textBits: string[] = [];
+  for (const p of userParts) {
+    if (p.type === "text") textBits.push(p.text);
+    else if (p.type === "image_url") {
+      const url = p.image_url.url;
+      const b64 = url.startsWith("data:")
+        ? url.replace(/^data:[^;]+;base64,/, "")
+        : url;
+      images.push(b64);
+    }
+  }
+
+  const res = await fetch(`${root}/api/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    signal: AbortSignal.timeout(120_000),
+    body: JSON.stringify({
+      model: endpoint.model,
+      stream: false,
+      options: {
+        temperature: 0.35,
+        num_ctx: 16384,
+      },
+      messages: [
+        { role: "system", content: forensicsSystem() },
+        {
+          role: "user",
+          content: textBits.join("\n\n"),
+          images: images.length ? images : undefined,
+        },
+      ],
+    }),
+  });
+
+  if (!res.ok) {
+    const detail = await res.text();
+    console.error("analysis ollama", res.status, detail);
+    throw new AnalysisError(
+      `Ollama failed (${res.status}) model=${endpoint.model}. ${detail.slice(0, 200)}`,
+    );
+  }
+
+  const json = (await res.json()) as {
+    message?: { content?: string };
+  };
+  return (json.message?.content || "").trim();
+}
+
 async function chatCompletions(
   endpoint: AnalysisEndpoint,
   userParts: ContentPart[],
 ): Promise<string> {
-  const body: Record<string, unknown> = {
-    model: endpoint.model,
-    temperature: 0.35,
-    messages: [
-      { role: "system", content: forensicsSystem() },
-      { role: "user", content: userParts },
-    ],
-  };
-  // Local VL + multi-frame needs a wider window than Ollama's 4k default
   if (endpoint.provider === "ollama") {
-    body.options = { num_ctx: 16384 };
+    return ollamaChat(endpoint, userParts);
   }
 
   const res = await fetch(`${endpoint.baseUrl}/chat/completions`, {
@@ -285,7 +331,15 @@ async function chatCompletions(
       Authorization: `Bearer ${endpoint.apiKey}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(120_000),
+    body: JSON.stringify({
+      model: endpoint.model,
+      temperature: 0.35,
+      messages: [
+        { role: "system", content: forensicsSystem() },
+        { role: "user", content: userParts },
+      ],
+    }),
   });
 
   if (!res.ok) {

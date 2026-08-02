@@ -220,23 +220,50 @@ export function AdminPanel() {
     setBusy(key);
     setMsg(null);
     try {
-      const res = await fetch("/api/admin/analysis/regenerate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const j = (await res.json()) as {
-        error?: string;
-        updated?: number;
-        failed?: number;
-      };
-      if (!res.ok) throw new Error(j.error || "Regenerate failed");
+      if ("id" in body) {
+        const res = await fetch("/api/admin/analysis/regenerate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const j = (await res.json()) as { error?: string; updated?: number };
+        if (!res.ok) throw new Error(j.error || "Regenerate failed");
+        setMsg(`Analysis updated: ${j.updated ?? 0}`);
+        await loadLibrary();
+        return;
+      }
+
+      // Chunked batch — 3 items / request so the UI doesn't hang 30+ min
+      let totalUpdated = 0;
+      let totalFailed = 0;
+      let remaining = 1;
+      let pass = 0;
+      while (remaining > 0 && pass < 40) {
+        pass += 1;
+        setMsg(`Regenerating… batch ${pass} (${totalUpdated} done)`);
+        const res = await fetch("/api/admin/analysis/regenerate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ templatesOnly: true, limit: 3 }),
+        });
+        const j = (await res.json()) as {
+          error?: string;
+          updated?: number;
+          failed?: number;
+          remaining?: number;
+          totalNeeded?: number;
+        };
+        if (!res.ok) throw new Error(j.error || "Regenerate failed");
+        totalUpdated += j.updated ?? 0;
+        totalFailed += j.failed ?? 0;
+        remaining = j.remaining ?? 0;
+        await loadLibrary();
+      }
       setMsg(
-        `Analysis updated: ${j.updated ?? 0}${
-          j.failed ? ` · ${j.failed} failed` : ""
+        `Analysis done: ${totalUpdated} updated${
+          totalFailed ? ` · ${totalFailed} failed` : ""
         }`,
       );
-      await loadLibrary();
     } catch (e) {
       setMsg(e instanceof Error ? e.message : "Regenerate failed");
     } finally {

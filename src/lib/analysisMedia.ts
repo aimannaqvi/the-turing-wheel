@@ -336,12 +336,23 @@ export async function transcribeAudio(mediaUrl: string): Promise<{
   transcript: string;
   source: "local" | "hf";
 }> {
+  // Prefer HF ASR when token exists — local Whisper cold-start can hang 10+ min
+  const hasHf = Boolean(
+    process.env.HF_TOKEN || process.env.HUGGINGFACE_HUB_TOKEN,
+  );
+  if (hasHf) {
+    try {
+      const transcript = await transcribeViaHf(mediaUrl);
+      if (transcript) return { transcript, source: "hf" };
+    } catch (e) {
+      console.error("hf asr failed", e);
+    }
+  }
   try {
     const transcript = await transcribeLocal(mediaUrl);
     if (transcript) return { transcript, source: "local" };
   } catch (e) {
     console.error("local whisper failed", e);
   }
-  const transcript = await transcribeViaHf(mediaUrl);
-  return { transcript, source: "hf" };
+  throw new Error("ASR failed (HF + local Whisper)");
 }

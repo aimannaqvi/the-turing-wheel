@@ -52,9 +52,11 @@ export async function POST(request: Request) {
 
   const body = (await request.json()) as {
     id?: string;
-    /** Regenerate every kept item with missing/template bullets */
+    /** Regenerate kept items with missing/template bullets (chunked) */
     templatesOnly?: boolean;
     allKept?: boolean;
+    /** Max items per request — default 3 (local VL is slow) */
+    limit?: number;
   };
 
   const select =
@@ -71,10 +73,11 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: "not found" }, { status: 404 });
       }
       const result = await regenerateOne(admin, row as Row);
-      return NextResponse.json({ ok: true, updated: 1, items: [result] });
+      return NextResponse.json({ ok: true, updated: 1, remaining: 0, items: [result] });
     }
 
     if (body.allKept || body.templatesOnly) {
+      const limit = Math.min(Math.max(body.limit ?? 3, 1), 10);
       const { data: rows, error } = await admin
         .from("media_library")
         .select(select)
@@ -86,11 +89,13 @@ export async function POST(request: Request) {
       const targets = (rows as Row[]).filter((r) =>
         body.allKept ? true : !hasUsableAnalysis(r.analysis_bullets),
       );
+      const batch = targets.slice(0, limit);
+      const remainingAfter = Math.max(0, targets.length - batch.length);
 
       const items: Array<{ id: string; bullets: string[] }> = [];
       const errors: Array<{ id: string; error: string }> = [];
 
-      for (const row of targets) {
+      for (const row of batch) {
         try {
           items.push(await regenerateOne(admin, row));
         } catch (e) {
@@ -105,6 +110,8 @@ export async function POST(request: Request) {
         ok: errors.length === 0,
         updated: items.length,
         failed: errors.length,
+        remaining: remainingAfter,
+        totalNeeded: targets.length,
         items,
         errors,
       });
