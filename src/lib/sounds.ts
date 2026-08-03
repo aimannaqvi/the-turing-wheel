@@ -26,7 +26,7 @@ async function loadWheelBuffer(): Promise<AudioBuffer | null> {
   if (wheelLoad) return wheelLoad;
   const c = getCtx();
   if (!c) return null;
-  wheelLoad = fetch("/sounds/wheel-spin.m4a?v=5")
+  wheelLoad = fetch("/sounds/wheel-spin.m4a?v=6")
     .then((response) => {
       if (!response.ok) throw new Error(`wheel audio ${response.status}`);
       return response.arrayBuffer();
@@ -63,16 +63,19 @@ export async function playWheelSpin(_landAt = SPIN_LAND_AT) {
   const gain = c.createGain();
   source.buffer = buffer;
   source.playbackRate.setValueAtTime(1, t);
+  // Fade out cleanly before any residual hiss at the end of the file.
+  const fadeStart = Math.max(0.05, buffer.duration - 0.12);
+  const endAt = buffer.duration;
   gain.gain.setValueAtTime(0.0001, t);
   gain.gain.exponentialRampToValueAtTime(1.05, t + 0.015);
-  gain.gain.setValueAtTime(1.05, t + buffer.duration - 0.08);
-  gain.gain.exponentialRampToValueAtTime(0.0001, t + buffer.duration);
+  gain.gain.setValueAtTime(1.05, t + fadeStart);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t + endAt);
   source.connect(gain);
   gain.connect(c.destination);
   activeWheel = source;
   activeWheelGain = gain;
   source.start(t);
-  source.stop(t + buffer.duration + 0.05);
+  source.stop(t + endAt + 0.02);
 }
 
 export function stopWheelSpin() {

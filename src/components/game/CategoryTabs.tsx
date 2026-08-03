@@ -2,20 +2,20 @@
 
 import {
   CATEGORY_META,
-  PLAYABLE_CATEGORIES,
-  type PlayableCategory,
+  GAME_TABS,
+  type GameTab,
 } from "@/lib/categories";
 
 type Props = {
-  active: PlayableCategory;
-  onChange: (c: PlayableCategory) => void;
+  active: GameTab;
+  onChange: (c: GameTab) => void;
   locked?: boolean;
 };
 
 export function CategoryTabs({ active, onChange, locked }: Props) {
   return (
     <div className="flex gap-1 border-b border-[var(--ink)]/10">
-      {PLAYABLE_CATEGORIES.map((cat) => {
+      {GAME_TABS.map((cat) => {
         const isActive = cat === active;
         return (
           <button

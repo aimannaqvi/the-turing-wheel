@@ -13,7 +13,7 @@ import {
   type AudioSceneKind,
 } from "@/lib/audioLabel";
 import { playWheelSpin, SPIN_LAND_AT, stopWheelSpin } from "@/lib/sounds";
-import type { PlayableCategory } from "@/lib/categories";
+import type { GameTab } from "@/lib/categories";
 import type { ReelPreview } from "@/lib/types";
 
 /** Visual card height — denser than step so cards overlap hard */
@@ -27,7 +27,7 @@ const LOOPS = 6;
 const SPIN_DURATION = SPIN_LAND_AT;
 
 type Props = {
-  category: PlayableCategory;
+  category: GameTab;
   previews: ReelPreview[];
   spinning: boolean;
   targetId: string;
@@ -330,7 +330,28 @@ function VideoCard({ item }: { item: ReelPreview }) {
   return <div className="h-full w-full bg-[#121212]" />;
 }
 
+function TermCard({ item }: { item: ReelPreview }) {
+  const seed = hashSeed(item.id);
+  const hue = 38 + (seed % 28);
+
+  return (
+    <div
+      className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden px-8"
+      style={{
+        background: `radial-gradient(ellipse at 40% 20%, hsl(${hue} 22% 18%), #101010 72%)`,
+      }}
+    >
+      <div className="pointer-events-none absolute inset-x-8 top-6 h-px bg-[var(--accent)]/35" />
+      <div className="pointer-events-none absolute inset-x-8 bottom-6 h-px bg-[var(--accent)]/35" />
+      <p className="relative z-[1] text-center font-serif text-[1.65rem] lowercase leading-snug tracking-tight text-[var(--accent)] sm:text-3xl">
+        {item.title}
+      </p>
+    </div>
+  );
+}
+
 function MediaFill({ item }: { item: ReelPreview }) {
+  if (item.mediaType === "text") return <TermCard item={item} />;
   if (item.mediaType === "audio") return <AudioCard item={item} />;
   if (item.mediaType === "video") return <VideoCard item={item} />;
 
@@ -347,8 +368,8 @@ function MediaFill({ item }: { item: ReelPreview }) {
   }
 
   return (
-    <div className="flex h-full w-full items-center justify-center bg-[#1a1a1a] font-sans text-xs text-white/40">
-      No preview
+    <div className="flex h-full w-full items-center justify-center bg-[#1a1a1a] font-sans text-xs lowercase text-white/40">
+      no preview
     </div>
   );
 }
@@ -448,7 +469,7 @@ export function SpinReel({
       {
         id: "empty",
         title: "Empty",
-        mediaType: category,
+        mediaType: category === "terms" ? "text" : category,
         thumbUrl: null,
         mediaUrl: null,
       } satisfies ReelPreview,
@@ -502,7 +523,9 @@ export function SpinReel({
         setLandedId(targetId);
         setLanding(true);
         window.setTimeout(() => {
-          if (gen.current === g) onSpinEnd();
+          if (gen.current !== g) return;
+          setLanding(false);
+          onSpinEnd();
         }, 850);
       },
     });

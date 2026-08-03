@@ -13,10 +13,17 @@ import { RevealCard } from "@/components/game/RevealCard";
 import {
   CATEGORY_META,
   PLAYABLE_CATEGORIES,
+  isMediaTab,
   isPlayableCategory,
+  type GameTab,
   type PlayableCategory,
 } from "@/lib/categories";
 import { formatPlayDateLabel } from "@/lib/date";
+import {
+  TERMS_FORCE_LAND,
+  scamTermId,
+  scamTermPreviews,
+} from "@/lib/scamTerms";
 import { playCorrect, playIncorrect } from "@/lib/sounds";
 import { formatSourceLabel } from "@/lib/sourceLabel";
 import {
@@ -42,7 +49,7 @@ export function GameShell() {
   const router = useRouter();
   const [pack, setPack] = useState<PackResponse | null>(null);
   const [phase, setPhase] = useState<GamePhase>("idle");
-  const [category, setCategory] = useState<PlayableCategory>("image");
+  const [category, setCategory] = useState<GameTab>("image");
   const [current, setCurrent] = useState<Artifact | null>(null);
   const [reveal, setReveal] = useState<ArtifactReveal | null>(null);
   const [wasCorrect, setWasCorrect] = useState(false);
@@ -52,6 +59,10 @@ export function GameShell() {
   const [guessError, setGuessError] = useState<string | null>(null);
   /** Random pick for the current spin (not pack order) */
   const [spinTarget, setSpinTarget] = useState<Artifact | null>(null);
+  const [landedTerm, setLandedTerm] = useState<string | null>(null);
+
+  const isTerms = category === "terms";
+  const termPreviews = useMemo(() => scamTermPreviews(), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -118,16 +129,20 @@ export function GameShell() {
   }, [playable, progress]);
 
   const remainingInCategory = useMemo(() => {
+    if (isTerms) return [];
     if (!progress) return [];
     return playable.filter(
       (a) => a.mediaType === category && !progress.guessedIds.includes(a.id),
     );
-  }, [playable, progress, category]);
+  }, [playable, progress, category, isTerms]);
 
   const nextArtifact = spinTarget ?? remainingInCategory[0] ?? null;
-  const canSpin = remainingInCategory.length > 0 && phase === "idle";
+  const canSpin = isTerms
+    ? phase === "idle"
+    : remainingInCategory.length > 0 && phase === "idle";
 
   const reelPreviews: ReelPreview[] = useMemo(() => {
+    if (isTerms) return termPreviews;
     return playable
       .filter((a) => a.mediaType === category)
       .map((a) => ({
@@ -137,10 +152,34 @@ export function GameShell() {
         thumbUrl: a.thumbUrl,
         mediaUrl: a.mediaUrl,
       }));
-  }, [playable, category]);
+  }, [playable, category, isTerms, termPreviews]);
 
   const onSpinRequest = useCallback(() => {
-    if (phase !== "idle" || remainingInCategory.length === 0) return;
+    if (phase !== "idle") return;
+
+    if (isTerms) {
+      const forced =
+        termPreviews.find((p) => p.title === TERMS_FORCE_LAND) ??
+        termPreviews[0];
+      if (!forced) return;
+      setSpinTarget({
+        id: forced.id,
+        playDate: pack?.playDate ?? "",
+        sortOrder: 0,
+        mediaType: "text",
+        mediaUrl: null,
+        textContent: forced.title,
+        title: forced.title,
+        thumbUrl: null,
+      });
+      setLandedTerm(null);
+      setReveal(null);
+      setCurrent(null);
+      setPhase("spinning");
+      return;
+    }
+
+    if (remainingInCategory.length === 0) return;
     const pick =
       remainingInCategory[
         Math.floor(Math.random() * remainingInCategory.length)
@@ -148,14 +187,23 @@ export function GameShell() {
     setSpinTarget(pick);
     setReveal(null);
     setCurrent(null);
+    setLandedTerm(null);
     setPhase("spinning");
-  }, [phase, remainingInCategory]);
+  }, [phase, remainingInCategory, isTerms, termPreviews, pack?.playDate]);
 
   const onSpinEnd = useCallback(() => {
+    if (isTerms) {
+      const term = spinTarget?.title ?? TERMS_FORCE_LAND;
+      setLandedTerm(term);
+      // Drop back to idle after the reel's landing beat finishes in SpinReel.
+      setPhase("idle");
+      setSpinTarget(null);
+      return;
+    }
     if (!spinTarget) return;
     setCurrent(spinTarget);
     setPhase("artifact");
-  }, [spinTarget]);
+  }, [spinTarget, isTerms]);
 
   const onGuess = useCallback(
     async (guessedAi: boolean) => {
@@ -217,7 +265,7 @@ export function GameShell() {
       setGuessError(null);
       return;
     }
-    if (remainingByCategory[category] <= 0) {
+    if (isMediaTab(category) && remainingByCategory[category] <= 0) {
       const next =
         PLAYABLE_CATEGORIES.find((c) => remainingByCategory[c] > 0) ?? category;
       setCategory(next);
@@ -258,7 +306,7 @@ export function GameShell() {
   }, [phase, onContinue, router]);
 
   const onTabChange = useCallback(
-    (c: PlayableCategory) => {
+    (c: GameTab) => {
       if (phase === "spinning") return;
       // Allow leaving artifact/reveal via tab switch (= implicit back)
       if (phase === "artifact" || phase === "revealed") {
@@ -268,6 +316,7 @@ export function GameShell() {
           setCurrent(null);
           setSpinTarget(null);
           setGuessError(null);
+          setLandedTerm(null);
           setCategory(c);
           setPhase("idle");
           return;
@@ -275,11 +324,13 @@ export function GameShell() {
         setCurrent(null);
         setSpinTarget(null);
         setGuessError(null);
+        setLandedTerm(null);
         setCategory(c);
         setPhase("idle");
         return;
       }
       setSpinTarget(null);
+      setLandedTerm(null);
       setCategory(c);
       setPhase("idle");
     },
@@ -324,7 +375,9 @@ export function GameShell() {
     progress.guessedIds.includes(a.id),
   );
   const categoryDoneAfterReveal =
-    remainingByCategory[category] <= 1 && phase === "revealed";
+    isMediaTab(category) &&
+    remainingByCategory[category] <= 1 &&
+    phase === "revealed";
   const tabsLocked = phase === "spinning";
   const showHeaderBack =
     phase === "spinning" ||
@@ -383,16 +436,15 @@ export function GameShell() {
         </div>
       </header>
 
-      {phase !== "complete" ? (
-        <CategoryTabs
-          active={category}
-          onChange={onTabChange}
-          locked={tabsLocked}
-        />
-      ) : null}
+      <CategoryTabs
+        active={category}
+        onChange={onTabChange}
+        locked={tabsLocked}
+      />
 
       <AnimatePresence mode="wait">
-        {phase === "complete" || (dayDone && phase === "idle") ? (
+        {!isTerms &&
+        (phase === "complete" || (dayDone && phase === "idle")) ? (
           <motion.section
             key="complete"
             initial={{ opacity: 0, y: 12 }}
@@ -404,17 +456,45 @@ export function GameShell() {
               day complete
             </p>
             <p className="mt-4 max-w-md font-sans text-base lowercase leading-7 text-[var(--ink)]/80">
-              come back after midnight ct for a new pack.
+              come back after midnight ct for a new pack — or try the terms reel.
             </p>
           </motion.section>
         ) : (
           <motion.section
-            key="play"
+            key={isTerms ? "terms" : "play"}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="flex flex-1 flex-col pt-8"
           >
-            {(phase === "idle" || phase === "spinning") &&
+            {isTerms ? (
+              <div className="flex flex-1 flex-col items-center py-4">
+                <SpinReel
+                  key="terms-reel"
+                  category="terms"
+                  previews={reelPreviews}
+                  targetId={scamTermId(TERMS_FORCE_LAND)}
+                  spinning={phase === "spinning"}
+                  onSpinEnd={onSpinEnd}
+                  onSpinRequest={onSpinRequest}
+                  disabled={phase === "spinning"}
+                />
+                {landedTerm && phase !== "spinning" ? (
+                  <p className="mt-8 max-w-md text-center font-serif text-2xl lowercase tracking-tight text-[var(--ink)]">
+                    landed on{" "}
+                    <span className="bg-[var(--accent)] px-1.5 text-[var(--on-accent)]">
+                      {landedTerm}
+                    </span>
+                  </p>
+                ) : (
+                  <p className="mt-8 max-w-md text-center font-sans text-sm lowercase text-[var(--muted)]">
+                    spin the wheel of ai scam terms
+                  </p>
+                )}
+              </div>
+            ) : null}
+
+            {!isTerms &&
+            (phase === "idle" || phase === "spinning") &&
             (canSpin || phase === "spinning") &&
             (spinTarget || remainingInCategory[0]) ? (
               <div className="flex flex-1 flex-col items-center py-4">
@@ -433,7 +513,9 @@ export function GameShell() {
               </div>
             ) : null}
 
-            {(phase === "idle" || phase === "spinning") && !nextArtifact ? (
+            {!isTerms &&
+            (phase === "idle" || phase === "spinning") &&
+            !nextArtifact ? (
               <div className="py-20 text-center">
                 <p className="font-serif text-2xl lowercase">
                   {CATEGORY_META[category].label} clear
@@ -449,21 +531,23 @@ export function GameShell() {
                           (c) => c !== category && remainingByCategory[c] > 0,
                         ) ?? null;
                       if (next) setCategory(next);
-                      else router.push("/");
+                      else setCategory("terms");
                     }}
                     label={
                       PLAYABLE_CATEGORIES.some(
                         (c) => c !== category && remainingByCategory[c] > 0,
                       )
                         ? "back to another category"
-                        : "home"
+                        : "try terms"
                     }
                   />
                 </div>
               </div>
             ) : null}
 
-            {(phase === "artifact" || phase === "revealed") && current ? (
+            {!isTerms &&
+            (phase === "artifact" || phase === "revealed") &&
+            current ? (
               <div className="py-2">
                 <div className="mb-4">
                   <BackButton onClick={onBack} label="back to wheel" />
