@@ -484,24 +484,36 @@ export function SpinReel({
     [base, landedId, targetId],
   );
 
+  // Reset park when leaving this reel category
   useEffect(() => {
-    if (spinning || landing) return;
-    const idle = Math.min(1, Math.max(0, base.length - 1));
-    y.set(centerY(idle));
     setLandedId(null);
     setSpinRun(null);
-  }, [category, base.length, spinning, landing, y]);
+    setLanding(false);
+  }, [category]);
 
-  // 1) When spin starts, build the shuffled strip
+  // Idle: either rest on a default card, or stay parked on the landed card
   useEffect(() => {
-    if (!spinning) return;
-    if (spinRun) return;
+    if (spinning || landing) return;
+    if (landedId != null && spinRun != null) {
+      y.set(centerY(spinRun.landIndex));
+      return;
+    }
+    const idle = Math.min(1, Math.max(0, base.length - 1));
+    y.set(centerY(idle));
+    setSpinRun(null);
+  }, [base.length, spinning, landing, landedId, spinRun, y]);
+
+  // 1) When spin starts, build a fresh strip (rebuild after a parked land too)
+  useEffect(() => {
+    if (!spinning || landing) return;
+    // Active strip already built for this spin
+    if (spinRun && landedId == null) return;
     const seed = Math.floor(Math.random() * 1e9) + 1;
     const built = buildStrip(base, targetId, seed);
     setLanding(false);
     setLandedId(null);
     setSpinRun({ seed, ...built });
-  }, [spinning, spinRun, base, targetId]);
+  }, [spinning, spinRun, landedId, landing, base, targetId]);
 
   // 2) Animate only after strip is committed
   useEffect(() => {
@@ -584,7 +596,8 @@ export function SpinReel({
             ))}
           </motion.div>
 
-          {landing && landedPreview ? (
+          {/* Hold the landed card until the next spin (terms reel stays mounted). */}
+          {(landing || (landedId != null && !spinning)) && landedPreview ? (
             <div
               className="pointer-events-none absolute inset-x-3 z-40 overflow-hidden rounded-sm ring-2 ring-[var(--accent)]"
               style={{
